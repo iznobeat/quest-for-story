@@ -7,7 +7,7 @@ const preview=new URLSearchParams(location.search).get('preview')==='1';
 const saveKey=preview?'quest-for-story-preview-v2':'quest-for-story-v1';
 let state=fresh(),verb='Walk to',selected=null,reveal=false,bubbleTimer,px=43,target=43,duel=0;
 let facing=1,lastTime=0,speaker=null,speakUntil=0,pendingAction=null,gestureUntil=0,sceneFade=0;
-let speechLines=[],speechIndex=0,afterSpeech=null,dialoguePartner='joachim',portraitFrame=-1;
+let speechLines=[],speechIndex=0,afterSpeech=null,showRepliesImmediately=false,dialoguePartner='joachim',portraitFrame=-1;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 try{state=restore(JSON.parse(localStorage.getItem(saveKey)))}catch{}
 const characters=new Characters();
@@ -55,9 +55,9 @@ function interact(id,type,x,w){
  if(verb==='Walk to'){moveTo(x+w/2-8,()=>say(act(state,'Look at',id)));return}
  moveTo(x+w/2-8,()=>{const before=state.inventory.length;say(act(state,chosenVerb,id));if(before!==state.inventory.length)music.effect();save();render()});
 }
-function startSpeech(text,partner='joachim',onDone=null){
+function startSpeech(text,partner='joachim',onDone=null,repliesReady=false){
  clearTimeout(bubbleTimer);$('#bubble').textContent='';
- speechLines=Array.isArray(text)?text:splitSpeech(text,partner);speechIndex=0;afterSpeech=onDone;
+ speechLines=Array.isArray(text)?text:splitSpeech(text,partner);speechIndex=0;afterSpeech=onDone;showRepliesImmediately=repliesReady;
  dialoguePartner=voices[partner]?partner:'joachim';showSpeechTurn();
 }
 function showSpeechTurn(){
@@ -71,8 +71,7 @@ function showSpeechTurn(){
  d.querySelector('.npc-portrait').setAttribute('aria-label',voices[dialoguePartner].name+' portrait');
  d.querySelector('.npc-person').hidden=dialoguePartner==='joachim';
  speaker=line.speaker;speakUntil=performance.now()+Math.min(16000,1800+line.text.length*44);portraitFrame=-1;
- const label=speechIndex<speechLines.length-1?'Continue →':afterSpeech?'Your reply →':'Back to adventure';
- d.querySelector('.dialogue-choices').append(button(label,()=>{speechIndex++;showSpeechTurn()},'advance-speech'));
+ if(speechIndex===speechLines.length-1&&showRepliesImmediately&&afterSpeech){const ready=afterSpeech;afterSpeech=null;ready()}
  refreshPortraits(performance.now());
 }
 function refreshPortraits(t){
@@ -83,13 +82,15 @@ function refreshPortraits(t){
 }
 function conversationChoices(id,choices){
  const host=$('#dialogue .dialogue-choices');host.replaceChildren();host.setAttribute('aria-label','Joachim’s replies');
- for(const label of choices)host.append(button('› '+label,()=>{
+ for(const label of choices){const topic=id+':'+label;const choice=button('› '+label,()=>{
+  if(!state.visitedTopics.includes(topic)){state.visitedTopics.push(topic);save()}
   music.effect('talk');
   if(label==='Let’s duel.'){startSpeech([{speaker:'joachim',text:label}],'kiiim',()=>{duel=0;showDuel()})}
-  else startSpeech([{speaker:'joachim',text:label},...splitSpeech(replies[label]||'A fascinating lead.',id)],id,()=>conversationChoices(id,choices));
- }));host.append(button('› I’ll get back to my investigation.',closeConversation));
+  else startSpeech([{speaker:'joachim',text:label},...splitSpeech(replies[label]||'A fascinating lead.',id)],id,()=>conversationChoices(id,choices),true);
+ });if(state.visitedTopics.includes(topic)){choice.classList.add('visited-topic');choice.title='Already discussed — click to hear again'}host.append(choice)}
+ host.append(button('› I’ll get back to my investigation.',closeConversation));
 }
-function conversation(id){const [name,text,choices=[]]=talk(state,id);startSpeech(text,id,()=>conversationChoices(id,choices));save();render()}
+function conversation(id){const [name,text,choices=[]]=talk(state,id);startSpeech(text,id,()=>conversationChoices(id,choices),true);save();render()}
 function closeConversation(){
  $('#dialogue').hidden=true;speaker=null;speakUntil=0;speechLines=[];speechIndex=0;afterSpeech=null;portraitFrame=-1;
  clearTimeout(bubbleTimer);$('#bubble').textContent='';
@@ -105,7 +106,7 @@ function showDuel(){
     duel++;if(duel===3){state.flags.duel=true;if(!state.notes.includes('Defeated Kiiim in an insult duel.'))state.notes.push('Defeated Kiiim in an insult duel.');say('A fatal exception… to my superiority. Fine. Read the disk. But the credits may contain scenes unsuitable for DOS loyalists.','kiiim');save();render()}else showDuel();
    });
   })));host.append(button('› I need to defragment my thoughts.',closeConversation));
- });
+ },true);
 }
 
 function modal(html){$('#modal-content').innerHTML=html;if(!$('#modal').open)$('#modal').showModal()}
@@ -134,7 +135,10 @@ $('#menu').onclick=()=>{
  $('#resume').onclick=()=>$('#modal').close();$('#restart').onclick=confirmRestart;
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){selected=null;verb='Walk to';pendingAction=null;target=px;closeConversation();render()}if(!$('#modal').open){if(e.key.toLowerCase()==='j')journal();if(e.key.toLowerCase()==='h')$('#hint').click()}});
-$('#scene').addEventListener('click',e=>{if(!$('#dialogue').hidden){e.stopImmediatePropagation();closeConversation();}},true);
+document.addEventListener('click',e=>{
+ if($('#dialogue').hidden||$('#modal').open||e.target.closest('.dialogue-choices button'))return;
+ e.preventDefault();e.stopImmediatePropagation();speechIndex++;showSpeechTurn();
+},true);
 $('#scene').addEventListener('click',e=>{if(e.target!==canvas)return;moveTo((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*100,null);selected=null;verb='Walk to';command()});
 $('#sound').onclick=()=>music.toggle();
 const unlock=e=>{if(e.target.closest?.('#sound'))return;music.unlock()};

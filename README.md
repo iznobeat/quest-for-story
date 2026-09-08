@@ -8,7 +8,7 @@ Run `npm start`, then open http://localhost:4173. No dependency installation or 
 
 Click a doorway to travel or a person to talk. Choose a verb and target. Click an inventory item and then its target to use it. Use the notebook to record witnesses. J opens the journal, H opens progressive hints, and Escape cancels an action. All interactive objects have focusable buttons; the sparkle button reveals them.
 
-Dialogue advances one speech turn at a time beside the speaker’s animated portrait, with a distinct colour for each character. Joachim appears on the right; remote interruptions show the actual speaker, including Haj. Click the play area to end a conversation.
+Dialogue advances one speech turn at a time beside the speaker’s animated portrait, with a distinct colour for each character. Joachim appears on the right; remote interruptions show the actual speaker, including Haj. Reply choices appear immediately when available. Previously selected topics are greyed out but remain clickable; this history is saved with the adventure. Click anywhere else to advance the next speech turn, or end the conversation after its final turn.
 
 Sound is **enabled by default**. Browser autoplay rules require an initial click or key press before playback; the sound button can mute it. Every room has a distinct original 32-bar arrangement, with lead, arpeggios, bass, pads and percussion. Tracks crossfade on room changes and pause when the page is hidden.
 

@@ -13,9 +13,9 @@ export const items = {
  response:['▧','Kiiim’s response','Kiiim admits hiding the credits disk. Izno refused to erase the Amiga contributors. Kiiim agrees to stop AUTOEXEC.BAT and restore every credit.'],
  evidence:['▤','Original credits','The Last Byte: Amiga code by Kiiim, bridge by Zendar, graphics by mgjesdal, restoration by Izno. Music: R.G.P. — a name alone is not enough to identify someone.']
 };
-export const fresh=()=>({version:2,scene:'courtyard',inventory:['notebook','coin'],flags:{},notes:[],won:false});
+export const fresh=()=>({version:2,scene:'courtyard',inventory:['notebook','coin'],flags:{},notes:[],visitedTopics:[],won:false});
 // Keep existing progress intact; earlier finished games remain finished.
-export function restore(saved){if(!saved||!['courtyard','amiga','dos','newsroom'].includes(saved.scene)||!Array.isArray(saved.inventory)||!saved.inventory.every(i=>items[i])||!saved.flags||typeof saved.flags!=='object'||Array.isArray(saved.flags)||!Array.isArray(saved.notes)||!saved.notes.every(n=>typeof n==='string'))return fresh();return {...saved,version:2,inventory:[...new Set(saved.inventory)],flags:{...saved.flags},notes:[...saved.notes]};}
+export function restore(saved){if(!saved||!['courtyard','amiga','dos','newsroom'].includes(saved.scene)||!Array.isArray(saved.inventory)||!saved.inventory.every(i=>items[i])||!saved.flags||typeof saved.flags!=='object'||Array.isArray(saved.flags)||!Array.isArray(saved.notes)||!saved.notes.every(n=>typeof n==='string'))return fresh();return {...saved,version:2,inventory:[...new Set(saved.inventory)],flags:{...saved.flags},notes:[...saved.notes],visitedTopics:Array.isArray(saved.visitedTopics)?saved.visitedTopics.filter(t=>typeof t==='string'):[]};}
 export const objectives=[['disk','Recover the vanished exhibition disk'],['dry','Restore the disk with the Amiga crew'],['archive','Check the newsroom’s archive clipping'],['pass','Get Izno’s trust and press access'],['duel','Outwit the lord of the command line'],['evidence','Recover the original credits'],['testimony','Record Haj’s account of the demo'],['response','Put the evidence to Kiiim'],['won','Publish the verified story and save the exhibition']];
 const give=(s,id)=>{if(!s.inventory.includes(id))s.inventory.push(id)};
 function done(s,flag,note){s.flags[flag]=true;if(!s.notes.includes(note))s.notes.push(note)}
