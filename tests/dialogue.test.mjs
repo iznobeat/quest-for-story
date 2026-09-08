@@ -13,5 +13,5 @@ test('offscreen Haj interruptions carry his portrait identity and stage directio
 });
 test('unlabelled speech preserves normal colons and each character has a distinct colour',()=>{
  assert.deepEqual(splitSpeech('The answer: 42.','mgjesdal'),[{speaker:'mgjesdal',text:'The answer: 42.'}]);
- assert.equal(new Set(Object.values(voices).map(v=>v.color)).size,6);
+ assert.equal(new Set(Object.values(voices).map(v=>v.color)).size,Object.keys(voices).length);
 });

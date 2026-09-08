@@ -59,3 +59,21 @@ Every push to `main` (or manual workflow dispatch) runs tests, builds an explici
 The existing `/root/website` Docker Compose nginx mounts `/srv/quest-for-story` read-only at `/www/quest-for-story`. The vhost source is `deploy/quest-for-story-https.conf`; the HTTP variant bootstraps the dedicated Let's Encrypt certificate. Existing Certbot renewal and nginx reload loops maintain HTTPS.
 
 GitHub configuration uses secrets `DEPLOY_KEY`, `DEPLOY_KNOWN_HOSTS`, and variable `DEPLOY_HOST`. The dedicated `quest-for-story-deploy` account is limited to write-only rsync in its own upload directory. Root-owned authorized keys are outside that directory. No keys or credentials belong in the repository. Revert a commit on `main` to deploy a previous version.
+
+## Episode 02: Test Mic III — The Last Resort
+
+Open http://localhost:4173/?episode=studio or choose Episode 02 above the game or in its menu. Joachim visits fictional versions of Mr. Mamen and Sigve in the cd SPILL recording studio and control room. The new adventure is inspired by the supplied Test Drive III podcast transcript: off-road exploration, F6 recovery, a disastrous jetty respawn, and the hosts’ mixed verdict become a recording rescue with three original dad-joke puzzles.
+
+Pick up the patch cable and driving notes in the control room. Use the cable on the mixer. Select **Use**, then the **Rescue console** to operate its controls. Talk to Mamen for the joke challenge, use the notebook on both hosts to check their verdicts, then mix the recovered take and play the resulting master. The journal and progressive hints track all seven objectives. Wrong answers are retryable; there are no timers or lost lives.
+
+The studio has its own save key (and separate `&preview=1` QA save). Episode 01 remains available with its existing progress. Two new original 32-bar tracks accompany the rooms; photo-inspired host sprites have breathing/speech motion and dialogue portraits. Backgrounds depict an imagined studio. All dialogue and mishaps are fictional; no podcast recording is included or published.
+
+`studio-story.js` contains the new story and room configuration. `assets/STUDIO-PROMPTS.md` records the built-in image generation prompts. `npm test` now runs 17 tests, including completion gates, incorrect-answer recovery, resumed puzzles, and both episodes’ saves. `npm run build` includes all 12 public files. A visual Chromium playthrough still needs to be performed.
+
+### Studio scene revision
+
+The control room now uses `assets/studio-control-v2.png`: normal-height furniture, a complete wheeled chair, and a clear foreground floor. Studio characters are approximately 31% taller. The original recording-room background and retro references are retained. All five mugs have distinct Look at exchanges, and the hosts have six additional transcript-inspired conversation topics.
+
+`studio-art.js` draws the cable and driving notes from `assets/studio-props.png` over the clean control-room background. Picking them up removes both their artwork and hotspot; saved collection state (including earlier inventories) keeps them hidden on return. The bound Monkey Island book remains a decorative prop. The build now contains 15 public files and the suite has 18 tests.
+
+Studio dialogue portraits use `assets/studio-portraits.png`, a registered three-column, two-row atlas with closed, open, and rounded mouth poses. Only the active speaker cycles mouth frames; listening and reduced-motion portraits remain closed. This replaces the previous static portrait bob. The build contains 16 public files and the suite has 19 tests, including portrait frame selection and reduced-motion behavior.
