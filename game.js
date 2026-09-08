@@ -1,11 +1,13 @@
 import {items,fresh,restore,act,talk,hint,objectives,replies,premise} from './story.js';
 import {Characters,characterNames} from './characters.js';
 import {Soundtrack} from './music.js';
+import {splitSpeech,voices} from './dialogue.js';
 const $=s=>document.querySelector(s),canvas=$('#world'),ctx=canvas.getContext('2d');
 const preview=new URLSearchParams(location.search).get('preview')==='1';
 const saveKey=preview?'quest-for-story-preview-v2':'quest-for-story-v1';
 let state=fresh(),verb='Walk to',selected=null,reveal=false,bubbleTimer,px=43,target=43,duel=0;
 let facing=1,lastTime=0,speaker=null,speakUntil=0,pendingAction=null,gestureUntil=0,sceneFade=0;
+let speechLines=[],speechIndex=0,afterSpeech=null,dialoguePartner='joachim',portraitFrame=-1;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 try{state=restore(JSON.parse(localStorage.getItem(saveKey)))}catch{}
 const characters=new Characters();
@@ -31,10 +33,8 @@ const staging={
 const playerStaging={courtyard:{y:370,height:139},amiga:{y:414,height:154},dos:{y:421,height:215},newsroom:{y:418,height:205}};
 const atlas=new Image();atlas.src='assets/castle-atlas.png';
 function save(manual=false){try{localStorage.setItem(saveKey,JSON.stringify(state));$('#save-status').textContent=preview?'Preview save · your main adventure is untouched':manual?'Game saved. Your scoop is safe.':'Adventure saved automatically'}catch{$('#save-status').textContent='Storage unavailable — keep this tab open'}}
-function say(text,who='joachim'){
- clearTimeout(bubbleTimer);$('#bubble').textContent=text;speaker=who;speakUntil=performance.now()+Math.min(12000,2500+text.length*30);gestureUntil=performance.now()+1100;
- bubbleTimer=setTimeout(()=>{$('#bubble').textContent='';if($('#dialogue').hidden)speaker=null},Math.max(8500,text.length*42));
-}
+function say(text,who='joachim'){startSpeech(text,who)}
+
 function command(label){$('#command').textContent=selected?`Use ${items[selected][1]} with ${label||'…'}`:`${verb} ${label||'…'}`}
 function button(text,onClick,className=''){const b=document.createElement('button');b.textContent=text;b.className=className;b.onclick=onClick;return b}
 function render(){
@@ -55,27 +55,62 @@ function interact(id,type,x,w){
  if(verb==='Walk to'){moveTo(x+w/2-8,()=>say(act(state,'Look at',id)));return}
  moveTo(x+w/2-8,()=>{const before=state.inventory.length;say(act(state,chosenVerb,id));if(before!==state.inventory.length)music.effect();save();render()});
 }
-function dialogueHeader(id,name,text){
- const d=$('#dialogue');d.hidden=false;d.innerHTML='<div class="dialogue-person npc-person"><canvas class="portrait npc-portrait" width="96" height="96" role="img"></canvas></div><div class="dialogue-body"><strong></strong><p></p><div class="dialogue-choices" aria-label="Joachim’s replies"></div></div><div class="dialogue-person joachim-person"><canvas class="portrait joachim-portrait" width="96" height="96" role="img" aria-label="Joachim Froholt portrait"></canvas><span>JOACHIM</span></div>';
- d.querySelector('strong').textContent=name.toUpperCase();d.querySelector('p').textContent=text;speaker=id;speakUntil=performance.now()+12000;d.querySelector('.npc-portrait').setAttribute('aria-label',characterNames[id]+' portrait');characters.portrait(d.querySelector('.npc-portrait'),id);characters.portrait(d.querySelector('.joachim-portrait'),'joachim',{facing:-1});
+function startSpeech(text,partner='joachim',onDone=null){
+ clearTimeout(bubbleTimer);$('#bubble').textContent='';
+ speechLines=Array.isArray(text)?text:splitSpeech(text,partner);speechIndex=0;afterSpeech=onDone;
+ dialoguePartner=voices[partner]?partner:'joachim';showSpeechTurn();
 }
-function conversation(id){
- const [name,text,choices=[]]=talk(state,id);$('#bubble').textContent='';dialogueHeader(id,name,text);
- for(const label of choices)$('#dialogue .dialogue-choices').append(button('› '+label,()=>{if(label==='Let’s duel.'){duel=0;showDuel()}else{$('#dialogue p').textContent=replies[label]||'A fascinating lead.';speakUntil=performance.now()+10000;gestureUntil=performance.now()+1800;music.effect('talk')}}));
- $('#dialogue .dialogue-choices').append(button('› I’ll get back to my investigation.',closeConversation));save();render();
+function showSpeechTurn(){
+ if(speechIndex>=speechLines.length){const done=afterSpeech;afterSpeech=null;speaker=null;speakUntil=0;if(done)done();else closeConversation();return}
+ const line=speechLines[speechIndex],voice=voices[line.speaker];
+ if(line.speaker!=='joachim')dialoguePartner=line.speaker;
+ const d=$('#dialogue');d.hidden=false;d.dataset.speaker=line.speaker;d.style.setProperty('--voice-color',voice.color);
+ d.innerHTML='<div class="dialogue-person npc-person"><canvas class="portrait npc-portrait" width="96" height="96" role="img"></canvas><span class="npc-name"></span></div><div class="dialogue-body"><div class="speech-card" role="status"><strong></strong><p></p></div><div class="dialogue-choices" aria-label="Dialogue controls"></div></div><div class="dialogue-person joachim-person"><canvas class="portrait joachim-portrait" width="96" height="96" role="img" aria-label="Joachim portrait"></canvas><span>JOACHIM</span></div>';
+ d.querySelector('strong').textContent=voice.name+(line.aside?' · '+line.aside:'');d.querySelector('p').textContent=line.text;
+ d.querySelector('.npc-name').textContent=dialoguePartner==='joachim'?'':voices[dialoguePartner].name;
+ d.querySelector('.npc-portrait').setAttribute('aria-label',voices[dialoguePartner].name+' portrait');
+ d.querySelector('.npc-person').hidden=dialoguePartner==='joachim';
+ speaker=line.speaker;speakUntil=performance.now()+Math.min(16000,1800+line.text.length*44);portraitFrame=-1;
+ const label=speechIndex<speechLines.length-1?'Continue →':afterSpeech?'Your reply →':'Back to adventure';
+ d.querySelector('.dialogue-choices').append(button(label,()=>{speechIndex++;showSpeechTurn()},'advance-speech'));
+ refreshPortraits(performance.now());
 }
-function closeConversation(){$('#dialogue').hidden=true;speaker=null;}
+function refreshPortraits(t){
+ if($('#dialogue').hidden)return;const frame=Math.floor(t/150);if(frame===portraitFrame)return;portraitFrame=frame;
+ const speaking=t<speakUntil&&!reduced;
+ characters.portrait($('#dialogue .npc-portrait'),dialoguePartner,{speaking:speaking&&speaker===dialoguePartner,time:t});
+ characters.portrait($('#dialogue .joachim-portrait'),'joachim',{facing:-1,speaking:speaking&&speaker==='joachim',time:t});
+}
+function conversationChoices(id,choices){
+ const host=$('#dialogue .dialogue-choices');host.replaceChildren();host.setAttribute('aria-label','Joachim’s replies');
+ for(const label of choices)host.append(button('› '+label,()=>{
+  music.effect('talk');
+  if(label==='Let’s duel.'){startSpeech([{speaker:'joachim',text:label}],'kiiim',()=>{duel=0;showDuel()})}
+  else startSpeech([{speaker:'joachim',text:label},...splitSpeech(replies[label]||'A fascinating lead.',id)],id,()=>conversationChoices(id,choices));
+ }));host.append(button('› I’ll get back to my investigation.',closeConversation));
+}
+function conversation(id){const [name,text,choices=[]]=talk(state,id);startSpeech(text,id,()=>conversationChoices(id,choices));save();render()}
+function closeConversation(){
+ $('#dialogue').hidden=true;speaker=null;speakUntil=0;speechLines=[];speechIndex=0;afterSpeech=null;portraitFrame=-1;
+ clearTimeout(bubbleTimer);$('#bubble').textContent='';
+}
 const insults=[['Your story has no bite!',['Then you haven’t met my bytes.','I have a very large notebook.','At least it has a mouse.'],0],['You’re nothing but obsolete garbage!',['I’m more of a recycling enthusiast.','Then I’m here for garbage collection.','That’s a floppy accusation.'],1],['You’ll never escape my DOS empire!',['I’ll just reboot your ego.','Have you tried turning it off?','Funny. Your keyboard has an Escape key.'],2]];
 function showDuel(){
- const [line,answers,correct]=insults[duel];dialogueHeader('kiiim',`Kiiim · insult ${duel+1} of 3`,`“${line}”`);
- answers.forEach((line,i)=>$('#dialogue .dialogue-choices').append(button('› '+line,()=>{
-  if(i!==correct){$('#dialogue p').textContent='Kiiim: Weak! Turn my own words against me. “'+insults[duel][0]+'”';music.effect('wrong');gestureUntil=performance.now()+1500;return}
-  music.effect();duel++;if(duel===3){state.flags.duel=true;if(!state.notes.includes('Defeated Kiiim in an insult duel.'))state.notes.push('Defeated Kiiim in an insult duel.');closeConversation();say('Kiiim: A fatal exception… to my superiority. Fine. Read the disk. But the credits may contain scenes unsuitable for DOS loyalists.','kiiim');save();render()}else showDuel();
- })));$('#dialogue .dialogue-choices').append(button('› I need to defragment my thoughts.',closeConversation));
+ const [line,answers,correct]=insults[duel];
+ startSpeech(line,'kiiim',()=>{
+  const host=$('#dialogue .dialogue-choices');host.replaceChildren();
+  answers.forEach((answer,i)=>host.append(button('› '+answer,()=>{
+   if(i!==correct){music.effect('wrong');startSpeech([{speaker:'joachim',text:answer},{speaker:'kiiim',text:'Weak! Turn my own words against me.'}],'kiiim',showDuel);return}
+   music.effect();startSpeech([{speaker:'joachim',text:answer}],'kiiim',()=>{
+    duel++;if(duel===3){state.flags.duel=true;if(!state.notes.includes('Defeated Kiiim in an insult duel.'))state.notes.push('Defeated Kiiim in an insult duel.');say('A fatal exception… to my superiority. Fine. Read the disk. But the credits may contain scenes unsuitable for DOS loyalists.','kiiim');save();render()}else showDuel();
+   });
+  })));host.append(button('› I need to defragment my thoughts.',closeConversation));
+ });
 }
+
 function modal(html){$('#modal-content').innerHTML=html;if(!$('#modal').open)$('#modal').showModal()}
 function journal(){modal(`<div class="eyebrow">SPILLHISTORIE.NO · FIELD NOTES</div><h2>Joachim’s journal</h2><p>${premise}</p>${objectives.map(([key,title])=>`<p class="journal-entry ${state.flags[key]?'done':''}">${state.flags[key]?'✓':'○'} ${title}</p>`).join('')}<div id="field-notes"></div><p class="source-link"><a href="https://spillhistorie.no/2024/11/27/the-story-of-the-amiga-cult-classic-twintris/" target="_blank" rel="noopener">Read the real Twintris investigation ↗</a></p>`);for(const note of state.notes){const p=document.createElement('p');p.textContent=note;$('#field-notes').append(p)}}
-function ending(){modal('<div class="eyebrow">EXHIBITION SAVED · FRONT PAGE MATERIAL</div><h2>The people behind the pixels.</h2><p class="byline">A story by Joachim Froholt · spillhistorie.no</p><p>The original credits, a witness, and Kiiim’s own account tell the same story: the castle’s lost demo was a collaboration. Kiiim wrote its Amiga code. Izno preserved it — and refused to erase the others.</p><p>AUTOEXEC.BAT is cancelled. The exhibition opens with every contributor credited, and a display on the DOS tools that helped make it possible. The little department finally has a story of its own.</p><p>Zendar reconnects the computers. mgjesdal polishes the display case. Izno changes his title to “Restoration Lead”. Kiiim insists he was only evil in compatibility mode.</p><p>“Thanks, Retrogamingpappa,” says everyone.</p><p>“I AM NOT RETROGAMINGPAPPA,” says Haj.</p><p>Joachim prints the denial in full. Some mysteries deserve a follow-up.</p><button class="action" id="keep-playing">Return to the castle</button>');$('#keep-playing').onclick=()=>$('#modal').close()}
+function ending(){closeConversation();modal('<div class="eyebrow">EXHIBITION SAVED · FRONT PAGE MATERIAL</div><h2>The people behind the pixels.</h2><p class="byline">A story by Joachim Froholt · spillhistorie.no</p><p>The original credits, a witness, and Kiiim’s own account tell the same story: the castle’s lost demo was a collaboration. Kiiim wrote its Amiga code. Izno preserved it — and refused to erase the others.</p><p>AUTOEXEC.BAT is cancelled. The exhibition opens with every contributor credited, and a display on the DOS tools that helped make it possible. The little department finally has a story of its own.</p><p>Zendar reconnects the computers. mgjesdal polishes the display case. Izno changes his title to “Restoration Lead”. Kiiim insists he was only evil in compatibility mode.</p><p>“Thanks, Retrogamingpappa,” says everyone.</p><p>“I AM NOT RETROGAMINGPAPPA,” says Haj.</p><p>Joachim prints the denial in full. Some mysteries deserve a follow-up.</p><button class="action" id="keep-playing">Return to the castle</button>');$('#keep-playing').onclick=()=>$('#modal').close()}
 $('#journal').onclick=journal;
 $('#hint').onclick=()=>{const h=hint(state);modal(`<div class="eyebrow">NO PREMIUM HINT HOTLINE REQUIRED</div><h2>A little nudge</h2><p>${h[0]}</p><button class="action" id="more-hint">Make it a bigger nudge</button><p id="hint-answer"></p>`);$('#more-hint').onclick=()=>$('#hint-answer').textContent=h[1]};
 $('#save').onclick=()=>save(true);
@@ -99,7 +134,8 @@ $('#menu').onclick=()=>{
  $('#resume').onclick=()=>$('#modal').close();$('#restart').onclick=confirmRestart;
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){selected=null;verb='Walk to';pendingAction=null;target=px;closeConversation();render()}if(!$('#modal').open){if(e.key.toLowerCase()==='j')journal();if(e.key.toLowerCase()==='h')$('#hint').click()}});
-$('#scene').addEventListener('click',e=>{if(e.target!==canvas||!$('#dialogue').hidden)return;moveTo((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*100,null);selected=null;verb='Walk to';command()});
+$('#scene').addEventListener('click',e=>{if(!$('#dialogue').hidden){e.stopImmediatePropagation();closeConversation();}},true);
+$('#scene').addEventListener('click',e=>{if(e.target!==canvas)return;moveTo((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*100,null);selected=null;verb='Walk to';command()});
 $('#sound').onclick=()=>music.toggle();
 const unlock=e=>{if(e.target.closest?.('#sound'))return;music.unlock()};
 document.addEventListener('pointerdown',unlock,{capture:true});document.addEventListener('keydown',unlock,{capture:true});
@@ -115,6 +151,7 @@ function draw(t){
  canvas.setAttribute('aria-label',`${names[state.scene]}. Joachim ${walking?'walking':'standing'}. ${speaker&&t<speakUntil?characterNames[speaker]+' speaking.':''}`);
  if(state.scene==='courtyard'){ctx.fillStyle=`rgba(255,220,139,${.55+.3*Math.sin(t/530)})`;ctx.fillRect(550,289,3,3)}
  if(!reduced&&t-sceneFade<350){ctx.fillStyle=`rgba(8,13,22,${.5*(1-(t-sceneFade)/350)})`;ctx.fillRect(0,0,768,432)}
+ refreshPortraits(t);
  requestAnimationFrame(draw);
 }
 render();music.scene=state.scene;music.status();requestAnimationFrame(draw);

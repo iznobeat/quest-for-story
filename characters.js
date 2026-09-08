@@ -52,8 +52,8 @@ export class Characters {
 
    }else paint(base,0,base.h,-anchor,-height,width,height);
   }
-  if(id==='kiiim'&&!reduced){ctx.fillStyle=`rgba(135,246,161,${.12+Math.sin(phase*3)*.08})`;ctx.beginPath();ctx.ellipse(0,-height*.57,width*.065,height*.026,0,0,7);ctx.fill()}
+
   ctx.restore();
  }
- portrait(canvas,id,{facing=1}={}){if(!this.ready)return;const ctx=canvas.getContext('2d'),col=cast.indexOf(id);if(col<0)return;const cell=this.cells[0][col];ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;const size=cell.h*.36;ctx.save();if(facing<0){ctx.translate(canvas.width,0);ctx.scale(-1,1)}ctx.drawImage(this.image,cell.x+cell.anchor-size/2,cell.y,size,size,0,0,canvas.width,canvas.height);ctx.restore();}
+ portrait(canvas,id,{facing=1,speaking=false,time=0}={}){if(!this.ready)return;const ctx=canvas.getContext('2d'),col=cast.indexOf(id);if(col<0)return;const base=this.cells[0][col],frame=speaking&&[0,1,0,1,1,0][Math.floor(time/150)%6]?3:0,cell=this.cells[frame][col];ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;const size=base.h*.36;ctx.save();if(facing<0){ctx.translate(canvas.width,0);ctx.scale(-1,1)}ctx.drawImage(this.image,cell.x+cell.anchor-size/2,cell.y,size,size,0,0,canvas.width,canvas.height);ctx.restore();}
 }
