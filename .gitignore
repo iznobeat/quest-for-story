@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.pem
+*.key
+.codex/
+.agents/
+.DS_Store
+assets/characters-v2.png
