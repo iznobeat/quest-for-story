@@ -77,3 +77,19 @@ The control room now uses `assets/studio-control-v2.png`: normal-height furnitur
 `studio-art.js` draws the cable and driving notes from `assets/studio-props.png` over the clean control-room background. Picking them up removes both their artwork and hotspot; saved collection state (including earlier inventories) keeps them hidden on return. The bound Monkey Island book remains a decorative prop. The build now contains 15 public files and the suite has 18 tests.
 
 Studio dialogue portraits use `assets/studio-portraits.png`, a registered three-column, two-row atlas with closed, open, and rounded mouth poses. Only the active speaker cycles mouth frames; listening and reduced-motion portraits remain closed. This replaces the previous static portrait bob. The build contains 16 public files and the suite has 19 tests, including portrait frame selection and reduced-motion behavior.
+
+## Episode 03: Leisure Suit Joachim — Love in the Time of One More Turn
+
+Choose Episode 03 or open `?episode=civ`. Joachim visits the neon One More Turn Inn for a deliberately corny Civilization speed-date. The game boxes are the eligible dates; their advocates are the wingmen. Talk to the boxes themselves for personal ads and failed pickup lines. Terje prefers the original Civilization, Kiiim V, Izno VI, and Nikolai VII. Haj insists on Sid Meier’s Pirates! and denies being Retrogamingpappa. These preferences and all dialogue are fictional character roles for this episode.
+
+Explore four rooms, groom Joachim for check-in, survive a three-line flirting challenge, arrange a campus date, wrap a diplomatic bouquet, and record all five opinions. The final favourite is the player’s choice: all four editions have a complete ending. Collectible comb, napkin, rose, and ribbon disappear from the scene and stay gone after reloading, including after being consumed in the bouquet recipe. Four mugs have original jokes. Nikolai and Terje have photo-inspired sprites and animated three-mouth portraits; the returning cast keeps its existing artwork. Four original chiptune arrangements accompany the rooms. No deaths, time limit, or real purchases.
+
+`civ-story.js` defines the story and `civ-art.js` handles removable props. The episode has separate normal and `&preview=1` saves. The full suite has 24 tests and the public build contains 22 files. Artwork prompts are in `assets/CIV-PROMPTS.md`.
+
+### Private Tailscale preview
+
+The preview runs at **http://100.110.22.8:4174/?episode=civ** while this desktop is running and the viewing device is connected to the same tailnet with access to that port. It is bound exclusively to the desktop’s Tailscale address. No Funnel or public deployment is configured. `scripts/preview-server.mjs` serves only the allowlisted `dist/` build with caching disabled; repository-only files are not served.
+
+The transient user service is `quest-for-story-preview.service`. Check it with `systemctl --user status quest-for-story-preview.service`; stop it with `systemctl --user stop quest-for-story-preview.service`. It survives the terminal session, but not a machine reboot. After edits, run `npm test` and `npm run build`, then restart the service if the public-file list changed. Node is currently installed at `/home/jonh/.local/share/mise/installs/node/26.2.0/bin/node`.
+
+To run the built preview manually, set `QFS_PREVIEW_HOST` to the desktop’s current Tailscale IPv4 and optionally `QFS_PREVIEW_PORT` (default 4174), then run `node scripts/preview-server.mjs`. Without those settings it binds to loopback. No commit or push is needed to preview changes.

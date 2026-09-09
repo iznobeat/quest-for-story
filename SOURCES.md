@@ -18,3 +18,16 @@ Relevant discussion: Test Drive III: The Passion, open-world exploration, diffic
 Likeness references: [Mr. Mamen supplied photograph](https://image-www.kode24.no/237402.webp?imageId=237402&x=0.00&y=0.00&cropw=100.00&croph=100.00&width=1822&height=1366&format=webp), [Sigve supplied portrait](https://cachedimages.podchaser.com/128x128/aHR0cHM6Ly9jcmVhdG9yLWltYWdlcy5wb2RjaGFzZXIuY29tLzcxYmJkMTY0MzZmOTRmNmJjODVmMmJiOTdlMTMyOThjLmpwZWc%3D/aHR0cHM6Ly93d3cucG9kY2hhc2VyLmNvbS9pbWFnZXMvbWlzc2luZy1pbWFnZS5wbmc%3D). Original photos are not distributed. Generated studio scenery is fictional, including decorative lettering and props. The hosts’ lines, lost take, sound failure, and dad jokes are original fictional writing, not quotations or biographical claims.
 
 The expanded fictional conversations also draw on the transcript’s three radio tunes, working windscreen wipers, cautious supercar commuting, confusion over driver skill settings, close encounters with trees, and airport exploration. All five mug exchanges are original jokes, not quotations from the podcast.
+
+## Episode 03 — Leisure Suit Joachim
+
+An original affectionate parody of the neon lounge, hapless flirtation, inventory logic and narrator humour of classic Leisure Suit Larry adventures. Joachim remains the hero. Civilization game boxes are the fictional eligible dates; there is no copied Larry dialogue, soundtrack or game background.
+
+The user assigned the character preferences: original Civilization for Terje, V for Kiiim, VI for Izno, VII for Nikolai, and Sid Meier’s Pirates! for Haj. These are scenario roles, not researched statements about the real people. All interviews, dates, denials and jokes are newly authored fiction. The player chooses their personal favourite rather than receiving a universal factual ranking.
+
+- [Nikolai’s supplied photograph](https://filmkikk.no/gfx/anmeldere/1722892554.jpg).
+- [Terje’s supplied group photograph](https://i0.wp.com/spillhistorie.no/wp-content/uploads/2025/06/tiltcast2025-spillegal-2.jpg?ssl=1): the central man in the tan hat is the reference subject. Other people were excluded from the generated character brief.
+- [Official Civilization VI manual](https://downloads.2kgames.com/civilization/vi/manuals/eu/CIV_VI_25TH_ONLINE_MANUAL_ENG.pdf): district placement and campus adjacency to mountains underpin Izno’s simplified fictional puzzle.
+- [Official Civilization VII launch overview](https://newsroom.2k.com/news/sid-meiers-civilizationr-vii-launching-worldwide-on-february-11-2025): background context for the fresh-era wordplay. The episode does not assert current patch details or review scores.
+
+References retrieved September 9, 2026. The photographs themselves are not distributed. Backgrounds, sprites, prop sheet and talking portraits were generated with the built-in image tool. See `assets/CIV-PROMPTS.md`. The first guest sheet had an opaque checkerboard; the selected revision has a real alpha channel.

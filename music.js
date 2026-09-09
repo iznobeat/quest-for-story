@@ -1,6 +1,10 @@
 // Original compositions. MIDI pitches and note placement are authored here;
 // no samples or melodies from existing games are used.
 export const tracks = {
+  civLobby: {title:'Leisure Suit, Serious Questions', bpm:102, root:48, mode:[0,2,3,5,7,9,10], progression:[0,3,0,4,5,3,1,4], lead:'triangle', motif:[7,9,10,9,7,4,6,7,11,10,9,7,6,4,3,4]},
+  civLounge: {title:'Six Sides to Every Pickup Line', bpm:114, root:50, mode:[0,2,4,5,7,9,10], progression:[0,5,3,4,0,1,5,4], lead:'square', motif:[7,7,11,9,12,11,9,7,6,8,10,8,7,5,6,7]},
+  civRetro: {title:'My First Save, My Last Dance', bpm:92, root:45, mode:[0,2,3,5,7,8,10], progression:[0,3,4,0,5,3,1,4], lead:'triangle', motif:[7,10,9,7,4,6,7,9,11,9,7,6,4,3,4,7]},
+  civRoof: {title:'Seventh Heaven, One More Turn', bpm:88, root:53, mode:[0,2,4,5,7,9,11], progression:[0,2,5,3,0,4,1,4], lead:'triangle', motif:[11,9,7,9,12,11,9,7,8,10,12,14,11,9,7,6]},
   studio: {title:'Two Mics, No Brakes', bpm:104, root:48, mode:[0,2,4,5,7,9,11], progression:[0,5,1,4,0,3,1,4], lead:'triangle', motif:[7,7,9,11,10,8,9,7,4,6,8,7,5,4,6,7]},
   control: {title:'Reverse Gear, Forward Story', bpm:94, root:47, mode:[0,2,3,5,7,8,10], progression:[0,3,5,4,0,5,3,4], lead:'square', motif:[11,9,7,6,7,9,8,6,4,7,9,10,8,7,5,7]},
   courtyard: {title:'Moon over the Deadline', bpm:92, root:50, mode:[0,2,3,5,7,8,10], progression:[0,5,3,4,0,2,5,4], lead:'triangle', motif:[7,9,11,10,9,7,6,4,5,7,9,8,7,5,4,6]},

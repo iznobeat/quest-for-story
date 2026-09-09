@@ -1,4 +1,6 @@
 export const voices={
+ nikolai:{name:'Nikolai',color:'#b5d9f5'},
+ terje:{name:'Terje',color:'#e0b68b'},
  mamen:{name:'Mr. Mamen',color:'#91dbcf'},
  sigve:{name:'Sigve',color:'#e8a5ce'},
  joachim:{name:'Joachim',color:'#f2d184'},
@@ -11,7 +13,7 @@ export const voices={
 // Convert authored exchanges into individual turns. Stage directions belong
 // to the speaker label, never to the sentence shown beside the portrait.
 export function splitSpeech(text,fallback='joachim'){
- const pattern=/\b(Joachim|Zendar|Haj|mgjesdal|Kiiim|Izno|Mamen|Sigve)(?:,\s*(from across the room|very far away))?:\s*/gi;
+ const pattern=/\b(Joachim|Zendar|Haj|mgjesdal|Kiiim|Izno|Mamen|Sigve|Nikolai|Terje)(?:,\s*(from across the room|very far away))?:\s*/gi;
  const matches=[...text.matchAll(pattern)],lines=[];
  if(!matches.length)return [{speaker:voices[fallback]?fallback:'joachim',text}];
  const intro=text.slice(0,matches[0].index).trim();if(intro)lines.push({speaker:voices[fallback]?fallback:'joachim',text:intro});
