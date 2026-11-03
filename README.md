@@ -52,7 +52,7 @@ Joachim’s glasses, beard and green jacket and mgjesdal’s moustache follow th
 
 ## Production deployment
 
-Live at https://quest-for-story.jonh.no. Repository: https://github.com/jhgundersen/quest-for-story.
+Live at https://quest-for-story.jonh.no. Repository: https://github.com/iznobeat/quest-for-story.
 
 Every push to `main` (or manual workflow dispatch) runs tests, builds an explicit public-file allowlist into `dist/`, uploads it by restricted rsync, and verifies the live HTTPS index and release manifest. No development server runs in production. Static files are revalidated to avoid stale scripts or sprite assets.
 
